@@ -4,6 +4,9 @@
 
 ## Dependencies
 
+* node
+* yeoman :
+
 ```
 npm install -g yo
 ```
@@ -12,5 +15,5 @@ npm install -g yo
 
 * ```npm install```
 * ```npm link```
-* ```cd path/to/random/folder && yo article```
+* ```cd path/to/a/directory && yo article```
 * Read the generated .html file

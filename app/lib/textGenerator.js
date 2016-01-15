@@ -11,22 +11,25 @@ var interestingColumns = [
     }
 ];
 
-// If file exists, we will use it, else we build it.
+// If file lexique.json exists, we will use it, else we build it for the first time.
 try {
     fs.accessSync(__dirname + '/../assets/lexique.json', fs.F_OK);
     var jsonfile = require('jsonfile');
     var lexique = jsonfile.readFileSync(__dirname + '/../assets/lexique.json');
 } catch (e) {
+    // Importing xlsb
     var xlsx               = require('node-xlsx');
     var xlsxToJson         = require('./xlsxToJson');
     var lexiqueName        = 'lexique380.xlsb';
     var lexiqueXls         = xlsx.parse(__dirname + '/../assets/' + lexiqueName);
     var sheet              = lexiqueXls[0].data;
 
+    // Construct the usable data, you can modify the method if you want another format
     var lexique = construct(sheet);
-    xlsxToJson(lexique);
+    xlsxToJson(lexique); // Save JSON file
 }
 
+// Possible sentence construction
 var sentenceAvailableConstructions = [
     'PRO:per VER ART:ind NOM ADV AUX ADJ',
     'PRO:per VER ART:def NOM ADV AUX ADJ',
@@ -41,7 +44,6 @@ module.exports = {
     getLexique: function() {
         return lexique;
     }
-
 };
 
 /**
@@ -52,6 +54,7 @@ module.exports = {
 function construct(data) {
     data = data.slice(1); // Remove headers
     var words = [];
+    // Retrieves all words and categorizes them
     data.forEach(function(row, key) {
         var word = {};
         interestingColumns.forEach(function(interestingColumn, key) {
@@ -59,7 +62,8 @@ function construct(data) {
         });
         words.push(word);
     });
-    var i = 0;
+
+    // Reduces the array
     return _.reduce(words, function(l, n) {
         if (i === 0) {
             l = {};
@@ -73,21 +77,31 @@ function construct(data) {
     });
 }
 
+/**
+ * Generates the whole article
+ * @param  {array}  data    Input data
+ * @param  {object} options The options
+ * @return {object}         The full article
+ */
 var makeWholeArticle = function(data, options) {
+    // Save the options
     var keywords          = options.keywords;
     var numberOfParagraph = options.numberOfParagraph || 4;
     var paragraphLength   = options.paragraphLength || 30;
     var percentOfKeywords = options.percentOfKeywords;
 
+    // Article skeleton
     var article = {
         title: options.title,
         paragraphs: []
     };
 
+    // Generates the paragraphs
     for (var i = 0; i < numberOfParagraph; i++) {
         article.paragraphs.push(makeParagraph(data, paragraphLength, percentOfKeywords));
     }
 
+    // Injects the keywords into the article
     article = keywordsInjection(article, keywords, percentOfKeywords);
 
     return article;
@@ -99,10 +113,13 @@ var makeWholeArticle = function(data, options) {
  * @return {string}
  */
 var makeParagraph = function(data, paragraphLength, percentOfKeywords) {
+    // Paragraph skeleton
     var paragraph = {
         subtitle: makeBasicSentence(data, true),
         content: ''
     };
+
+    // Generates the sentences
     for (var i = 0; i < paragraphLength; i++) {
         // 1/3
         if (_.random(0, 2) === 1) {
@@ -112,9 +129,10 @@ var makeParagraph = function(data, paragraphLength, percentOfKeywords) {
         }
     }
 
+    // Removes the trailing spaces
     paragraph.content = paragraph.content.slice(0, -1);
 
-    return paragraph; // Remove trailing space
+    return paragraph;
 };
 
 /**
@@ -123,17 +141,23 @@ var makeParagraph = function(data, paragraphLength, percentOfKeywords) {
  * @return {string}
  */
 var makeBasicSentence = function(data, isCompleteSentence) {
+    // Sentence skeleton
     var sentence = '';
+
+    // Retrieves all available types of words (ex: NOM, AUX, VER, ...)
     var types = sentenceAvailableConstructions[_.random(0, sentenceAvailableConstructions.length - 1)].split(' ');
+
+    // Pick a random word of a chosen types array
     types.forEach(function(type, key) {
         sentence += data[type][_.random(0, data[type].length - 1)] + ' ';
     });
 
     if (isCompleteSentence) {
-        sentence = sentence.charAt(0).toUpperCase() + sentence.slice(1);
+        sentence = sentence.charAt(0).toUpperCase() + sentence.slice(1); // Add an uppercase to the first letter of the sentence
     }
 
-    sentence = sentence.slice(0, -1); // Remove trailing space
+    // Removes the traling spaces
+    sentence = sentence.slice(0, -1);
 
     return sentence;
 };
@@ -144,32 +168,40 @@ var makeBasicSentence = function(data, isCompleteSentence) {
  * @return {string}
  */
 var makeComplexSentence = function(data) {
+    // A complex sentence is just two sentences separated by a comma
     return makeBasicSentence(data, true) + ', ' + makeBasicSentence(data, false);
 };
 
 /**
  * Injects keywords
- * @param  {object} article           [description]
- * @param  {[type]} keywords          [description]
- * @param  {[type]} percentOfKeywords [description]
- * @return {[type]}                   [description]
+ * @param  {object} article           The full article
+ * @param  {array}  keywords          The keywords you want to insert
+ * @param  {array}  percentOfKeywords The percent of keywords in the whole article
+ * @return {object}                   The article with keywords injected
  */
 var keywordsInjection = function(article, keywords, percentOfKeywords) {
-    var wordCount = article.title.split(' ').length; // Title word count
+    // Counts the title words
+    var wordCount = article.title.split(' ').length;
+
+    // Counts the words withing a paragraph, including subtitles
     article.paragraphs.forEach(function(paragraph, key) {
-        wordCount += paragraph.subtitle.split(' ').length; // Subtitle word count
-        wordCount += paragraph.content.split(' ').length; // Content word count
+        // Counts the subtitle words
+        wordCount += paragraph.subtitle.split(' ').length;
+        // Counts the content words
+        wordCount += paragraph.content.split(' ').length;
     });
 
-    console.log(wordCount);
+    // The number of keywords needed in the article
     var needNumberKeywords = wordCount * percentOfKeywords / 100;
 
+    // Adds the keywords in one subtitle
     keywords.forEach(function(keyword, key) {
         var randParagraph = _.random(0, article.paragraphs.length - 1);
         article.paragraphs[randParagraph].subtitle = injectWord(article.paragraphs[randParagraph].subtitle, keyword);
     });
     needNumberKeywords--;
 
+    // Adds the keywords at random places
     keywords.forEach(function(keyword, key) {
         for (var i = 0; i < needNumberKeywords; i++) {
             var randParagraph = _.random(0, article.paragraphs.length - 1);
@@ -180,12 +212,19 @@ var keywordsInjection = function(article, keywords, percentOfKeywords) {
     return article;
 };
 
+/**
+ * Add a word at a random place in a text
+ * @param  {string} text A text
+ * @param  {string} word The wod you want to add in the text
+ * @return {string}      The text with keywords added
+ */
 var injectWord = function(text, word) {
+    // Define the random place
     var rand = text.indexOf(' ', _.random(0, text.length - 10));
     return text.splice(rand, 0, ' ' + word);
 };
 
-// Aqdd splice function
+// Add splice function, override string class
 String.prototype.splice = function(idx, rem, str) {
     return this.slice(0, idx) + str + this.slice(idx + Math.abs(rem));
 };

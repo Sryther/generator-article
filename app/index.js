@@ -23,8 +23,7 @@ NodeGeneratorMochaConnectors.prototype.askFor = function askFor() {
 
   console.log(
     this.yeoman +
-    '\nThe name of your project should be a name of a connector and' +
-    '\nshould be a unique ID not already in use.');
+    '\nThe title of your article should be unique.');
 
   var prompts = [{
     name: 'title',
@@ -84,6 +83,7 @@ NodeGeneratorMochaConnectors.prototype.askFor = function askFor() {
 
 NodeGeneratorMochaConnectors.prototype.lib = function lib() {
   var that = this;
+
   this.template('article.html', this.slugTitle + '.html');
 };
 
