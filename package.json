@@ -10,10 +10,12 @@
   "license": "ISC",
   "dependencies": {
     "excel": "^0.1.4",
+    "html-wiring": "^1.2.0",
     "jsonfile": "^2.2.3",
     "lodash": "^4.0.0",
     "node-xlsx": "^0.6.0",
     "underscore": "^1.8.3",
+    "yeoman-character": "^1.1.0",
     "yeoman-generator": "^0.22.3"
   }
 }
