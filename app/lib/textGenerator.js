@@ -156,12 +156,12 @@ var makeComplexSentence = function(data) {
  */
 var keywordsInjection = function(article, keywords, percentOfKeywords) {
     var wordCount = article.title.split(' ').length; // Title word count
-
     article.paragraphs.forEach(function(paragraph, key) {
         wordCount += paragraph.subtitle.split(' ').length; // Subtitle word count
         wordCount += paragraph.content.split(' ').length; // Content word count
     });
 
+    console.log(wordCount);
     var needNumberKeywords = wordCount * percentOfKeywords / 100;
 
     keywords.forEach(function(keyword, key) {

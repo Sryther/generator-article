@@ -45,7 +45,7 @@ NodeGeneratorMochaConnectors.prototype.askFor = function askFor() {
   }, {
     name: 'paragraphLength',
     message: 'The length of a paragraph (number of sentences)',
-    default: 30
+    default: 35
   }];
 
   this.currentYear = (new Date()).getFullYear();
