@@ -10,6 +10,7 @@ npm install -g yo
 
 ## How to
 
-* ```npm link```
+* ```npm install```
+$ ```npm link```
 * ```cd path/to/random/folder && yo article```
 * Read the generated .html file
