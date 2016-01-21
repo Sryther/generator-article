@@ -64,6 +64,7 @@ function construct(data) {
     });
 
     // Reduces the array
+    var i = 0;
     return _.reduce(words, function(l, n) {
         if (i === 0) {
             l = {};
